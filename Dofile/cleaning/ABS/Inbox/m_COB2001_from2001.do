@@ -1,10 +1,27 @@
+**********************************************************************  
+* Created by Heera Lee 
+
+* Purpose of the program: 
+* =====================                                                      
+* This program creates immigration shock (explanatory variables and instrumental variables)
+* ====================== 
+* Immigration in Australia 
+* ABS (Australia Burea of Statistics) 
+* 2001 census: 1991, 1996, 2001 
+* 2016 census: 2006, 2011, 2016 
+* 2021 census: 2011, 2016, 2021 (only using 2021 information)
+**********************************************************************
 clear all
+	global main "/Users/ihuila/Research/AUS_immigration"
+	global raw "${main}/Data raw"
+	global data "${main}/Data cleaned"
+	global interim "${main}/Data interim"
+	global final "${main}/Data final"
+**********************************************************************	
 set more off
 
-cd "/Users/ihuila/Desktop/data/2025ABS/afterABS3/2001"
-
 * LGA merge codes
-import excel using "/Users/ihuila/Desktop/data/2025ABS/rawdata/LGAFINAL_ALL_2021H.xlsx", sheet("LGA2001") first clear
+import excel using "$raw/LGAFINAL_ALL_2021H.xlsx", sheet("LGA2001") first clear
 sort LGA2001
 tempfile lgacode
 save `lgacode'.dta, replace
@@ -83,14 +100,18 @@ replace countrycode = "USA" if cob=="United States of America"
 replace countrycode = "VNM" if cob=="Viet Nam"
 replace countrycode = "IRN" if cob=="Iran" // 교수님 코드에서 추가한 나라 (2001,2016,2021 센서스에 있음)
 
-* 기타 국가 
 replace countrycode="ZZZ" if cob=="Born elsewhere"
 
-ren T2 pop
+ren T3 pop
 keep cob LGAFINAL21 pop countrycode
-gen year = 1996
+gen year = 2001 
 
-* 국가 아이디  
+/*
+* 안맞는 지역 
+drop if LGAFINAL21 == 1120 | LGAFINAL21 == 2079 | LGAFINAL21 == 4069 | LGAFINAL21==9001 
+*/
+
+* 국가 아이디 
 egen cob_id=group(countrycode)
 *********************************************
 * pop_immi - 호주제외 이민자 수 (i,k,t)
@@ -107,46 +128,42 @@ bysort LGAFINAL21: egen tot_pop = total(pop) // 지역별 전체인구 (모든 �
 sort countrycode 
 by countrycode: egen national_pop= total(pop_immi)
 
-* share_cob - k국가 출신인 사람의 비율 (immi i,k,t/immi k,t)
+* share_cob - k국가 출신인 사람의 비율 (immi i,k,t / immi k,t)
 gen share_cob=pop_immi/national_pop 
 
-sort LGAFINAL21 cob
-tab countrycode 
-sort cob 
-save "COB1996_robust_from2001_v501.dta", replace
-
+save "$interim/ABS/X/COB2001_robust_from2001_v501.dta", replace
 /*
-***************************1991년도 share of ***********************************
-use "/Users/ihuila/Desktop/data/2025ABS/afterABS3/2001/COB1996_robust_from2001_v501.dta", clear 
+***********************************************
+use "/Users/ihuila/Desktop/data/2025ABS/afterABS3/2001/COB2001_robust_from2001_v501.dta", clear 
 
 * share_cob = k국가 출신인 이민자 수 / 지역별 전체 이민자 수 
-*bysort region: egen totimmi91 = total(pop_immi)
+*bysort region: egen totimmi01 = total(pop_immi)
 
 * 1. 
-ren totimmi totimmi96 // 지역별 총 이민자 수 (in 1991)
+ren totimmi totimmi01 // 지역별 총 이민자 수 (in 2001)
 
 * 2. 국가별 share 생성
-gen share96 = pop_immi / totimmi96
+gen share01 = pop_immi / totimmi01
 
 * 3. 필요한 열만 남기기
-keep LGAFINAL21 countrycode share96
+keep LGAFINAL21 countrycode share01 
 
 * 4. wide 형태로 reshape (국가별 열 생성)
-reshape wide share96, i(LGAFINAL21) j(countrycode) string
+reshape wide share01, i(LGAFINAL21) j(countrycode) string
 
-gen year = 1996 
+gen year = 2001 
 
-save "/Users/ihuila/Desktop/data/2025ABS/afterABS3/2001/COB1996_robust_from2001_v502.dta", replace
+save "/Users/ihuila/Desktop/data/2025ABS/afterABS3/2001/COB2001_robust_from2001_v502.dta", replace
 *********************************************
-use "/Users/ihuila/Desktop/data/2025ABS/afterABS3/2001/COB1996_robust_from2001_v501.dta", clear 
+use "/Users/ihuila/Desktop/data/2025ABS/afterABS3/2001/COB2001_robust_from2001_v501.dta", clear 
 
 ren national_pop immi
 
 * 4. wide reshape (국가별 national total 변수를 가로로 붙임)
-keep LGAFINAL21 countrycode immi 
+keep LGAFINAL21 countrycode immi
 reshape wide immi, i(LGAFINAL21) j(countrycode) string
 
-gen year = 1996
-save "/Users/ihuila/Desktop/data/2025ABS/afterABS3/2001/COB1996_robust_from2001_v503.dta", replace
-*/
+gen year = 2001 
 
+save "/Users/ihuila/Desktop/data/2025ABS/afterABS3/2001/COB2001_robust_from2001_v503.dta", replace
+*/

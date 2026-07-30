@@ -1,59 +1,72 @@
-// 여기서 수정  
+**********************************************************************  
+* Created by Heera Lee 
+
+* Purpose of the program: 
+* =====================                                                      
+* This program creates immigration shock (explanatory variables and instrumental variables)
+* ====================== 
+* Immigration in Australia 
+* ABS (Australia Burea of Statistics) 
+* 2001 census: 1991, 1996, 2001 
+* 2016 census: 2006, 2011, 2016 
+* 2021 census: 2011, 2016, 2021 (only using 2021 information)
+**********************************************************************
 clear all
+	global main "/Users/ihuila/Research/AUS_immigration"
+	global raw "${main}/Data raw"
+	global data "${main}/Data cleaned"
+	global interim "${main}/Data interim"
+	global final "${main}/Data final"
+**********************************************************************	
 set more off
 
-cd "/Users/ihuila/Desktop/data/2025ABS/afterABS3/2016"
-
 * LGA merge codes
-import excel using "/Users/ihuila/Desktop/data/2025ABS/rawdata/LGAFINAL_ALL_2021H.xlsx", sheet("LGA2016") first clear
-sort LGA2016
+import excel using "$raw/LGAFINAL_ALL_2021H.xlsx", sheet("LGA2021") first clear
+sort LGA2021
+drop lga_code2021
 tempfile lgacode
 save `lgacode'.dta, replace
 
 * Loop and append all LGAs' COB data
 use cob1.dta, clear
 ren A cob
-foreach var in Zimbabwe Pakistan "Country of Birth not stated" Croatia "The Former Yugoslav Republic of Macedonia" Malta Turkey {
+foreach var in Afghanistan Bangladesh Nepal Pakistan "Country of birth not stated" Croatia Taiwan {
 replace cob = "Born elsewhere(e)" if cob=="`var'"
 }
 
-collapse (sum) M1 F1 T1 M2 F2 T2 M3 F3 T3, by(LGA2016 lga_info cob)
+collapse (sum) M1 F1 T1 M2 F2 T2 M3 F3 T3, by(LGA2021 lga_info cob)
 tempfile all
 save `all'.dta, replace
 
-forvalues i = 2(1)544 {
+forvalues i = 2(1)547 {
 	use cob`i'.dta, clear
 	ren A cob
-	foreach var in Zimbabwe Pakistan "Country of Birth not stated" Croatia "The Former Yugoslav Republic of Macedonia" Malta Turkey { 
+	foreach var in Afghanistan Bangladesh Nepal Pakistan "Country of birth not stated" Croatia Taiwan {
 replace cob = "Born elsewhere(e)" if cob=="`var'"
 }
-	collapse (sum) M1 F1 T1 M2 F2 T2 M3 F3 T3, by(LGA2016 lga_info cob)
+	collapse (sum) M1 F1 T1 M2 F2 T2 M3 F3 T3, by(LGA2021 lga_info cob)
 	append using `all'.dta
 	save `all'.dta, replace
 }
 
 * Merge in the consistent LGA codes
-sort LGA2016
-merge m:1 LGA2016 using `lgacode'.dta
+sort LGA2021
+merge m:1 LGA2021 using `lgacode'.dta
 tab _merge
 drop _merge
 
-save "TEMP_2016_from2016_v401.dta", replace
-
+save "TEMP_2021_from2021_v401.dta", replace
 
 collapse (sum) M1 F1 T1 M2 F2 T2 M3 F3 T3, by(LGAFINAL21 cob)
-
-tab cob 
 
 drop if cob=="Total"
 
 * fix cob names
 replace cob = "Australia" if cob=="Australia(b)"
-replace cob = "Born elsewhere" if cob=="Born elsewhere(e)"
 replace cob = "China" if cob=="China (excludes SARs and Taiwan)(c)"
 replace cob = "Hong Kong" if cob=="Hong Kong (SAR of China)(c)"
 replace cob = "United Kingdom" if cob=="United Kingdom, Channel Islands and Isle of Man(d)"
-
+replace cob = "Born elsewhere" if cob=="Born elsewhere(e)"
 
 * generate country code
 gen countrycode = "AUS" if cob=="Australia"
@@ -64,10 +77,10 @@ replace countrycode = "FJI" if cob=="Fiji"
 replace countrycode = "DEU" if cob=="Germany"
 replace countrycode = "GRC" if cob=="Greece"
 replace countrycode = "HKG" if cob=="Hong Kong"
+replace countrycode = "IRN" if cob=="Iran" // 교수님 코드에서 추가한 나라 (2001,2016,2021 센서스에 있음)
 replace countrycode = "IND" if cob=="India"
 replace countrycode = "IDN" if cob=="Indonesia"
 replace countrycode = "IRQ" if cob=="Iraq"
-replace countrycode = "IRN" if cob=="Iran" // 교수님 코드에서 추가한 나라 (2001,2016,2021 센서스에 있음)
 replace countrycode = "IRL" if cob=="Ireland"
 replace countrycode = "ITA" if cob=="Italy"
 replace countrycode = "JPN" if cob=="Japan"
@@ -86,14 +99,20 @@ replace countrycode = "GBR" if cob=="United Kingdom"
 replace countrycode = "USA" if cob=="United States of America"
 replace countrycode = "VNM" if cob=="Vietnam"
 
-tab countrycode 
-tab cob 
+* Afghanistan 
+* Bangladesh
+* Country of birth not stated 
+* Croatia 
+* Iran 
+* Nepal 
+* Pakistan
+* Taiwan 
 
 replace countrycode="ZZZ" if cob=="Born elsewhere"
 
-ren T2 pop
+ren T3 pop
 keep cob LGAFINAL21 pop countrycode
-gen year = 2011
+gen year = 2021
 
 /*
 * 안맞는 지역 
@@ -117,34 +136,34 @@ bysort LGAFINAL21: egen tot_pop = total(pop) // 지역별 전체인구 (모든 �
 sort countrycode 
 by countrycode: egen national_pop= total(pop_immi)
 
-* share_cob - k국가 출신인 사람의 비율 
+* share_cob - k국가 출신인 사람의 비율 (immi i,k,t / immi k,t)
 gen share_cob=pop_immi/national_pop 
 
-save "COB2011_robust_from2016_v501.dta", replace
+save "$interim/ABS/X/COB2021_robust_from2021_v501.dta", replace
 /*
 ***************************************************
-use "/Users/ihuila/Desktop/data/2025ABS/afterABS3/2016/COB2011_robust_from2016_v501.dta", clear 
+use "/Users/ihuila/Desktop/data/2025ABS/afterABS3/2021/COB2021_robust_from2021_v501.dta", clear 
 
 * share_cob = k국가 출신인 이민자 수 / 지역별 전체 이민자 수 
-*bysort region: egen totimmi11 = total(pop_immi)
+*bysort region: egen totimmi21 = total(pop_immi)
 
 * 1. 
-ren totimmi totimmi11 // 지역별 총 이민자 수 (in 2011)
+ren totimmi totimmi21 // 지역별 총 이민자 수 (in 2021)
 
 * 2. 국가별 share 생성
-gen share11 = pop_immi / totimmi11
+gen share21 = pop_immi / totimmi21
 
 * 3. 필요한 열만 남기기
-keep LGAFINAL21 countrycode share11 
+keep LGAFINAL21 countrycode share21 
 
 * 4. wide 형태로 reshape (국가별 열 생성)
-reshape wide share11, i(LGAFINAL21) j(countrycode) string
+reshape wide share21, i(LGAFINAL21) j(countrycode) string
 
-gen year = 2011 
+gen year = 2021 
 
-save "/Users/ihuila/Desktop/data/2025ABS/afterABS3/2016/COB2011_robust_from2016_v502.dta", replace
+save "/Users/ihuila/Desktop/data/2025ABS/afterABS3/2021/COB2021_robust_from2021_v502.dta", replace
 *********************************************
-use "/Users/ihuila/Desktop/data/2025ABS/afterABS3/2016/COB2011_robust_from2016_v501.dta", clear 
+use "/Users/ihuila/Desktop/data/2025ABS/afterABS3/2021/COB2021_robust_from2021_v501.dta", clear 
 
 ren national_pop immi
 
@@ -152,7 +171,8 @@ ren national_pop immi
 keep LGAFINAL21 countrycode immi
 reshape wide immi, i(LGAFINAL21) j(countrycode) string
 
-gen year = 2011 
+gen year = 2021 
 
-save "/Users/ihuila/Desktop/data/2025ABS/afterABS3/2016/COB2011_robust_from2016_v503.dta", replace
+save "/Users/ihuila/Desktop/data/2025ABS/afterABS3/2021/COB2021_robust_from2021_v503.dta", replace
+
 */

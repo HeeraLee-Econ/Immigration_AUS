@@ -1,11 +1,26 @@
-********************************************************************************
-** Do file that converts Census i.xls to cob`i'.dta for 2001 Census
-** by Heera Lee, 2025.09.02 
+**********************************************************************  
+* Created by Heera Lee 
+
+* Purpose of the program: 
+* =====================                                                      
+* This program creates immigration shock (explanatory variables and instrumental variables)
+* ====================== 
+* Immigration in Australia 
+* ABS (Australia Burea of Statistics) 
+* 2001 census: 1991, 1996, 2001 
+* 2016 census: 2006, 2011, 2016 
+* 2021 census: 2011, 2016, 2021 (only using 2021 information)
 ********************************************************************************
 clear all
+	global main "/Users/ihuila/Research/AUS_immigration"
+	global raw "${main}/Data raw"
+	global data "${main}/Data cleaned"
+	global interim "${main}/Data interim"
+	global final "${main}/Data final"
+	
 set more off
-
-cd "/Users/ihuila/Desktop/data/2025ABS/rawdata/2001"
+************************************************************************
+cd "$raw/2001"
 
 forvalues i = 1(1)625 {
 import excel using `i'.xls, sheet("T 07A") clear
@@ -66,7 +81,7 @@ save `lgat'.dta, replace
 
 import excel using `i'.xls, sheet("T 07B") clear
 
-keep in 10/38
+keep in 10/36 
 keep A B C D F G H J K L
 drop if A==""
 
@@ -113,8 +128,6 @@ drop _merge
 
 compress
 
-*cd "D:\Dropbox\Solar_HP_New\Census2001\COBdata"
-
-save /Users/ihuila/Desktop/data/2025ABS/afterABS3/2001/cob`i'.dta, replace
+save "$interim/ABS/X/2001/cob`i'.dta", replace
 }
 

@@ -1,7 +1,3 @@
-* test commit comment 
-* test commit comment 
-
-* COB_table: 랩세미나 20251107 
 clear all 
 set more off 
 cd "/Users/ihuila/Desktop/data/2025ABS"
