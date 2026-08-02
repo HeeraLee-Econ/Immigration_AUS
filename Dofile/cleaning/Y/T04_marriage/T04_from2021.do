@@ -1,0 +1,247 @@
+**********************************************************************
+* Created by Heera Lee
+* Purpose: T04(Marital Status by Age by Sex) -> 지역-연도 패널
+*          2021 census (2011, 2016, 2021 년도 정보 포함)
+*          한 시트(T04) 안에 세 연도블록이 세로로 쌓여있음
+*          (2011 CENSUS 표시행 -> 15-19...Total 행들 -> 2016 CENSUS 표시행 -> ... -> 2021 CENSUS -> ...)
+*          연도 표시행(marker row)을 찾아서 fill-down으로 year를 채워준 뒤 사용.
+*
+*          2021 시트는 모든 그룹(Married/Separated/Divorced/Widowed/Never married/Total)에
+*          Persons 컬럼까지 있지만, 2006 census와 변수셋을 맞추기 위해 Married/Never married/Total의
+*          Male/Female만 사용 (Persons는 제외).
+*
+*          긁어오는 연령대: 15-19 ~ 35-39 (5세단위 5개 구간) + 가로(연령합산) Total
+**********************************************************************
+clear all
+	global main "/Users/ihuila/Research/AUS_immigration"
+	global raw "${main}/Data raw"
+	global data "${main}/Data cleaned"
+	global interim "${main}/Data interim"
+	global final "${main}/Data final"
+**********************************************************************
+set more off
+
+local sheet  "T04"
+local ext    "xlsx"
+local lgavar "LGA2021"
+local nfiles = 547
+
+capture mkdir "$interim/ABS"
+capture mkdir "$interim/ABS/Y/T04"
+capture mkdir "$interim/ABS/Y/T04/2021"
+
+**********************************************************************
+* PART 1: 547개 LGA 원자료 -> 세 연도블록(2011,2016,2021) 합쳐서 cob`i'.dta 저장
+**********************************************************************
+cd "$raw/2021"
+
+forvalues i = 1/`nfiles' {
+
+    * 2021 폴더는 전부 .xlsx라 파일 존재여부만 확인
+    capture confirm file "`i'.`ext'"
+    if _rc {
+        di as error "SKIP: T04 2021 i=`i' (`i'.`ext' not found/locked)"
+        continue
+    }
+
+    * LGA 라벨 한 줄
+    import excel using `i'.`ext', sheet("`sheet'") clear
+    keep A
+    keep in 2
+    ren A lga_info
+    gen `lgavar' = `i'
+    tempfile lga
+    save `lga'.dta, replace
+
+    * 본 데이터: B/C=Married(M/F), R/S=Never married(M/F), V/W=Total(M/F) (Persons D/T/X는 제외)
+    import excel using `i'.`ext', sheet("`sheet'") clear
+    keep A B C R S V W
+
+    gen year = .
+    replace year = 2011 if B=="2011 CENSUS"
+    replace year = 2016 if B=="2016 CENSUS"
+    replace year = 2021 if B=="2021 CENSUS"
+    forvalues r = 1/60 {
+        replace year = year[_n-1] if missing(year) & _n>1
+    }
+
+    keep if inlist(A, "15-19 years","20-24 years","25-29 years","30-34 years","35-39 years","Total")
+
+    rename (B C) (married_m married_f)
+    rename (R S) (nevermarried_m nevermarried_f)
+    rename (V W) (totpop_m totpop_f)
+    destring married_m married_f nevermarried_m nevermarried_f totpop_m totpop_f, replace force
+
+    gen `lgavar' = `i'
+    sort `lgavar' year
+    merge m:1 `lgavar' using `lga'.dta
+    drop _merge
+
+    save "$interim/ABS/Y/T04/2021/cob`i'.dta", replace
+}
+
+**********************************************************************
+* PART 2: cob`i'.dta -> 연령대별로 가로(wide)변수 생성, 지역-연도 단위로 collapse
+*          지역별로 long`i'.dta에 각자 저장 (공유 누적파일 없음 -> 재실행 안전)
+**********************************************************************
+cd "$interim/ABS/Y/T04/2021"
+
+local lgavar "LGA2021"
+
+forvalues i = 1(1)547 {
+
+    use cob`i', clear
+
+    * 변수명 규칙: {혼인상태}_{성별}_{연령코드}
+    *   혼인상태: married(기혼) / nevermarried(미혼) / totpop(원자료의 "가로" Total 컬럼그룹 = 혼인상태 전체합)
+    *   연령코드: 1519~3539(5세단위) / ageall(원자료의 "세로" Total 행 = 해당 혼인상태의 전연령 합)
+    gen married_m_1519   = married_m if A=="15-19 years"
+    gen married_m_2024   = married_m if A=="20-24 years"
+    gen married_m_2529   = married_m if A=="25-29 years"
+    gen married_m_3034   = married_m if A=="30-34 years"
+    gen married_m_3539   = married_m if A=="35-39 years"
+    gen married_m_ageall = married_m if A=="Total"
+
+    gen married_f_1519   = married_f if A=="15-19 years"
+    gen married_f_2024   = married_f if A=="20-24 years"
+    gen married_f_2529   = married_f if A=="25-29 years"
+    gen married_f_3034   = married_f if A=="30-34 years"
+    gen married_f_3539   = married_f if A=="35-39 years"
+    gen married_f_ageall = married_f if A=="Total"
+
+    gen nevermarried_m_1519   = nevermarried_m if A=="15-19 years"
+    gen nevermarried_m_2024   = nevermarried_m if A=="20-24 years"
+    gen nevermarried_m_2529   = nevermarried_m if A=="25-29 years"
+    gen nevermarried_m_3034   = nevermarried_m if A=="30-34 years"
+    gen nevermarried_m_3539   = nevermarried_m if A=="35-39 years"
+    gen nevermarried_m_ageall = nevermarried_m if A=="Total"
+
+    gen nevermarried_f_1519   = nevermarried_f if A=="15-19 years"
+    gen nevermarried_f_2024   = nevermarried_f if A=="20-24 years"
+    gen nevermarried_f_2529   = nevermarried_f if A=="25-29 years"
+    gen nevermarried_f_3034   = nevermarried_f if A=="30-34 years"
+    gen nevermarried_f_3539   = nevermarried_f if A=="35-39 years"
+    gen nevermarried_f_ageall = nevermarried_f if A=="Total"
+
+    gen totpop_m_1519   = totpop_m if A=="15-19 years"
+    gen totpop_m_2024   = totpop_m if A=="20-24 years"
+    gen totpop_m_2529   = totpop_m if A=="25-29 years"
+    gen totpop_m_3034   = totpop_m if A=="30-34 years"
+    gen totpop_m_3539   = totpop_m if A=="35-39 years"
+    gen totpop_m_ageall = totpop_m if A=="Total"
+
+    gen totpop_f_1519   = totpop_f if A=="15-19 years"
+    gen totpop_f_2024   = totpop_f if A=="20-24 years"
+    gen totpop_f_2529   = totpop_f if A=="25-29 years"
+    gen totpop_f_3034   = totpop_f if A=="30-34 years"
+    gen totpop_f_3539   = totpop_f if A=="35-39 years"
+    gen totpop_f_ageall = totpop_f if A=="Total"
+
+    drop married_m married_f nevermarried_m nevermarried_f totpop_m totpop_f
+
+    collapse (max) ///
+        married_m_1519 married_m_2024 married_m_2529 married_m_3034 married_m_3539 married_m_ageall ///
+        married_f_1519 married_f_2024 married_f_2529 married_f_3034 married_f_3539 married_f_ageall ///
+        nevermarried_m_1519 nevermarried_m_2024 nevermarried_m_2529 nevermarried_m_3034 nevermarried_m_3539 nevermarried_m_ageall ///
+        nevermarried_f_1519 nevermarried_f_2024 nevermarried_f_2529 nevermarried_f_3034 nevermarried_f_3539 nevermarried_f_ageall ///
+        totpop_m_1519 totpop_m_2024 totpop_m_2529 totpop_m_3034 totpop_m_3539 totpop_m_ageall ///
+        totpop_f_1519 totpop_f_2024 totpop_f_2529 totpop_f_3034 totpop_f_3539 totpop_f_ageall, ///
+        by(year `lgavar' lga_info)
+
+    save "long`i'.dta", replace
+}
+
+local files ""
+forvalues i = 1(1)547 {
+    capture confirm file "long`i'.dta"
+    if !_rc local files "`files' long`i'.dta"
+}
+
+local first : word 1 of `files'
+local rest : list files - first
+
+use "`first'", clear
+append using `rest'
+save "T04_2021_long.dta", replace
+
+**********************************************************************
+* PART 3: LGAFINAL21 크로스워크 머지(한 번만) + 최종 저장
+**********************************************************************
+use "T04_2021_long.dta", clear
+
+local lgavar "LGA2021"
+
+preserve
+    import excel using "$raw/LGAFINAL_ALL_2021H.xlsx", sheet("`lgavar'") first clear
+    sort `lgavar'
+    tempfile lgacode
+    save `lgacode'.dta, replace
+restore
+
+merge m:1 `lgavar' using `lgacode'.dta
+tab _merge
+keep if _merge==3
+drop _merge
+
+* n:1 지역통폐합 있을 수 있어 사람 수(count)라서 합산으로 마무리
+collapse (sum) ///
+    married_m_1519 married_m_2024 married_m_2529 married_m_3034 married_m_3539 married_m_ageall ///
+    married_f_1519 married_f_2024 married_f_2529 married_f_3034 married_f_3539 married_f_ageall ///
+    nevermarried_m_1519 nevermarried_m_2024 nevermarried_m_2529 nevermarried_m_3034 nevermarried_m_3539 nevermarried_m_ageall ///
+    nevermarried_f_1519 nevermarried_f_2024 nevermarried_f_2529 nevermarried_f_3034 nevermarried_f_3539 nevermarried_f_ageall ///
+    totpop_m_1519 totpop_m_2024 totpop_m_2529 totpop_m_3034 totpop_m_3539 totpop_m_ageall ///
+    totpop_f_1519 totpop_f_2024 totpop_f_2529 totpop_f_3034 totpop_f_3539 totpop_f_ageall, ///
+    by(LGAFINAL21 year)
+
+isid LGAFINAL21 year
+tab year
+
+order LGAFINAL21 year
+sort LGAFINAL21 year
+
+* collapse는 라벨을 지워버리므로 최종 저장 직전에 한 번만 라벨링
+* {혼인상태}: married=기혼, nevermarried=미혼, totpop=원자료 "가로" Total컬럼(모든 혼인상태 합=인구수)
+* {연령}: 1519~3539=5세단위 연령대, ageall=원자료 "세로" Total행(해당 혼인상태의 전연령 합)
+label var married_m_1519      "기혼(Married), 남, 15-19세 - 명"
+label var married_m_2024      "기혼(Married), 남, 20-24세 - 명"
+label var married_m_2529      "기혼(Married), 남, 25-29세 - 명"
+label var married_m_3034      "기혼(Married), 남, 30-34세 - 명"
+label var married_m_3539      "기혼(Married), 남, 35-39세 - 명"
+label var married_m_ageall    "기혼(Married), 남, 전연령 합(원자료 세로 Total행) - 명"
+
+label var married_f_1519      "기혼(Married), 여, 15-19세 - 명"
+label var married_f_2024      "기혼(Married), 여, 20-24세 - 명"
+label var married_f_2529      "기혼(Married), 여, 25-29세 - 명"
+label var married_f_3034      "기혼(Married), 여, 30-34세 - 명"
+label var married_f_3539      "기혼(Married), 여, 35-39세 - 명"
+label var married_f_ageall    "기혼(Married), 여, 전연령 합(원자료 세로 Total행) - 명"
+
+label var nevermarried_m_1519   "미혼(Never married), 남, 15-19세 - 명"
+label var nevermarried_m_2024   "미혼(Never married), 남, 20-24세 - 명"
+label var nevermarried_m_2529   "미혼(Never married), 남, 25-29세 - 명"
+label var nevermarried_m_3034   "미혼(Never married), 남, 30-34세 - 명"
+label var nevermarried_m_3539   "미혼(Never married), 남, 35-39세 - 명"
+label var nevermarried_m_ageall "미혼(Never married), 남, 전연령 합(원자료 세로 Total행) - 명"
+
+label var nevermarried_f_1519   "미혼(Never married), 여, 15-19세 - 명"
+label var nevermarried_f_2024   "미혼(Never married), 여, 20-24세 - 명"
+label var nevermarried_f_2529   "미혼(Never married), 여, 25-29세 - 명"
+label var nevermarried_f_3034   "미혼(Never married), 여, 30-34세 - 명"
+label var nevermarried_f_3539   "미혼(Never married), 여, 35-39세 - 명"
+label var nevermarried_f_ageall "미혼(Never married), 여, 전연령 합(원자료 세로 Total행) - 명"
+
+label var totpop_m_1519      "전체 혼인상태 합(원자료 가로 Total컬럼), 남, 15-19세 - 명"
+label var totpop_m_2024      "전체 혼인상태 합(원자료 가로 Total컬럼), 남, 20-24세 - 명"
+label var totpop_m_2529      "전체 혼인상태 합(원자료 가로 Total컬럼), 남, 25-29세 - 명"
+label var totpop_m_3034      "전체 혼인상태 합(원자료 가로 Total컬럼), 남, 30-34세 - 명"
+label var totpop_m_3539      "전체 혼인상태 합(원자료 가로 Total컬럼), 남, 35-39세 - 명"
+label var totpop_m_ageall    "전체 혼인상태 x 전연령 합(grand total), 남 - 명"
+
+label var totpop_f_1519      "전체 혼인상태 합(원자료 가로 Total컬럼), 여, 15-19세 - 명"
+label var totpop_f_2024      "전체 혼인상태 합(원자료 가로 Total컬럼), 여, 20-24세 - 명"
+label var totpop_f_2529      "전체 혼인상태 합(원자료 가로 Total컬럼), 여, 25-29세 - 명"
+label var totpop_f_3034      "전체 혼인상태 합(원자료 가로 Total컬럼), 여, 30-34세 - 명"
+label var totpop_f_3539      "전체 혼인상태 합(원자료 가로 Total컬럼), 여, 35-39세 - 명"
+label var totpop_f_ageall    "전체 혼인상태 x 전연령 합(grand total), 여 - 명"
+
+save "$data/ABS_T04_2021census.dta", replace

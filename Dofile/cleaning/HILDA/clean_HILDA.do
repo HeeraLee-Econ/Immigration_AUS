@@ -100,7 +100,7 @@ tab jbmo61, m
 // High: Managers(1), Professionals(2)
 gen skill = 3 if inlist(jbmo61,1,2)
 
-// Middle: Technicians(3), Community(4), Clerical(5)
+// Middle: Technicians(3), Community(4), Clerical(5) 
 replace skill = 2 if inlist(jbmo61,3,4,5) 
 
 // Low: Sales(6), Machine op(7), Labourers(8)
@@ -187,8 +187,13 @@ drop _merge  // delete 54 obs
 ***************************
 * step 1: baseline region
 
+** 특정 지역 분석샘플에서 제외 (ABS 데이터에서도 동일)
+drop if LGAFINAL21 == 1120 | LGAFINAL21 == 2079 | LGAFINAL21 == 4069 | LGAFINAL21==9001 // 지방정부 없는 미편입지역, 혹은 원주민 소유 원격지, 해외령 
+
+// 각 사람들 최초관측치 연도 기준 - 거주지역 변수 만들기 
 bys id (year): gen LGAFINAL21_base = LGAFINAL21[1]
 gen clusterid_base = LGAFINAL21_base
+
 *****************************
 * step 2: track internal migration 
 gsort id -year 
@@ -221,5 +226,12 @@ by id: egen clusterid2 = mode(LGAFINAL21), minmode
 
 **generate new id variable --> use the LGA_ALL mode as cluster if moved around, tiebreak: maxmode
 by id: egen clusterid3 = mode(LGAFINAL21), maxmode
+
+// 이사한 사람들 직전 관측된 연도로 거주지역 넣기 
+sort id year
+by id: gen L_LGAFINAL21 = LGAFINAL21[_n-1]
+
+gen mergeLGA = LGAFINAL21
+replace mergeLGA = L_LGAFINAL21 if mover==1 & !missing(L_LGAFINAL21)
 
 save "$data/HILDA_Y_long.dta", replace

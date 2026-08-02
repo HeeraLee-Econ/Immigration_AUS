@@ -114,14 +114,35 @@ label var Zit "IV(denominator:pop i,91)"
 
 drop Zit_b Zit_p 
 
-gen g_kt = immi_kt 
+gen g_kt = immi_kt
 
-assert pop_it == pop_i91 if year==1991 // for check 
+**********************************************************************
+* 이질성 분석용: 영어권(English-speaking) 출신국 이민자 비중
+* (GBR/USA/NZL/CAN/IRL - "Main English-Speaking Countries" 분류)
+**********************************************************************
+gen english = 0
+replace english = 1 if countrycode == "GBR"
+replace english = 1 if countrycode == "USA"
+replace english = 1 if countrycode == "NZL"
+replace english = 1 if countrycode == "CAN"
+replace english = 1 if countrycode == "IRL"
+replace english = . if countrycode == "AUS"   // native 제외 (있다면)
+
+gen immi_eng_ikt = immi_ikt * english         // 영어권만 추출
+
+bysort LGAFINAL21 year: egen immi_eng_it = total(immi_eng_ikt)  // LGA x year 합산
+
+gen immi_noneng_it = immi_it - immi_eng_it
+
+gen share_eng    = immi_eng_it / immi_it
+gen share_noneng = immi_noneng_it / immi_it
+
+assert pop_it == pop_i91 if year==1991 // for check
 
 save "$interim/ABS/X/processingIV.dta", replace // save for rotemberg weight
-*************************************************************************** 
-keep LGAFINAL21 year Xit Zit 
+***************************************************************************
+keep LGAFINAL21 year Xit Zit immi_it immi_eng_it immi_noneng_it share_eng share_noneng
 
 duplicates drop LGAFINAL21 year, force
-			 
-save "$data/ABS_immi_final.dta", replace 
+
+save "$data/ABS_immi_final.dta", replace
