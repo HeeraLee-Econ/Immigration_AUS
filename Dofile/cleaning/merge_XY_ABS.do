@@ -47,6 +47,9 @@ egen fifteenshare_base = max(cond(year==2001, fifteenshare_lag, .)), by(LGAFINAL
 egen bach_base          = max(cond(year==2001, bachshare_ageall_lag, .)), by(LGAFINAL21)
 
 gen fifteen_trend = fifteenshare_base * trend  
+replace fifteen_trend =. if year <=1996 
+
 gen bach_trend = bach_base * trend 
+replace bach_trend =.  if year<=1996 
 
 save "$final/ABS_XY_final.dta", replace 

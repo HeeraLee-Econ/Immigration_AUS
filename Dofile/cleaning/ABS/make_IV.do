@@ -112,9 +112,27 @@ gen Zit = Zit_b / pop_i91
 
 label var Zit "IV(denominator:pop i,91)"
 
-drop Zit_b Zit_p 
-
 gen g_kt = immi_kt
+
+**********************************************************************
+* leave-one-country-out IV: robustness check 
+**********************************************************************
+local countries IND CHN PHL LKA GBR HKG VNM NZL
+local cnames    India China Philippines SriLanka UK HongKong Vietnam NewZealand
+
+local n : word count `countries'
+forvalues k = 1/`n' {
+    local code : word `k' of `countries'
+    local name : word `k' of `cnames'
+
+    gen Zit_p_excl = Zit_p if countrycode != "`code'"
+
+    bysort LGAFINAL21 year: egen Zit_b_excl = total(Zit_p_excl)
+    gen Zit_excl`name' = Zit_b_excl / pop_i91
+    label var Zit_excl`name' "Leave-one-country-out IV (`name' 제외)"
+
+    drop Zit_p_excl Zit_b_excl
+}
 
 **********************************************************************
 * 이질성 분석용: 영어권(English-speaking) 출신국 이민자 비중
@@ -141,7 +159,7 @@ assert pop_it == pop_i91 if year==1991 // for check
 
 save "$interim/ABS/X/processingIV.dta", replace // save for rotemberg weight
 ***************************************************************************
-keep LGAFINAL21 year Xit Zit immi_it immi_eng_it immi_noneng_it share_eng share_noneng
+keep LGAFINAL21 year Xit Zit immi_it immi_eng_it immi_noneng_it share_eng share_noneng Zit_exclIndia Zit_exclChina Zit_exclPhilippines Zit_exclSriLanka Zit_exclUK Zit_exclHongKong Zit_exclVietnam Zit_exclNewZealand
 
 duplicates drop LGAFINAL21 year, force
 

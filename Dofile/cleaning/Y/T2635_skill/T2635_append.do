@@ -48,17 +48,17 @@ gen lowskshare  = (lowsk_m + lowsk_f) / (total_m + total_f)
 gen lowskmshare = lowsk_m / total_m
 gen lowskfshare = lowsk_f / total_f
 
-label var highskshare  "고숙련 직업 비중(Managers+Professionals / 전체 취업자, 남+여)"
-label var highskmshare "고숙련 직업 비중(남성)"
-label var highskfshare "고숙련 직업 비중(여성)"
+label var highskshare  "High-skill occupation share (Managers+Professionals / total employed, both sexes)"
+label var highskmshare "High-skill occupation share (male)"
+label var highskfshare "High-skill occupation share (female)"
 
-label var midskshare  "중숙련 직업 비중(Technicians/Trades+Community Service+Clerical/Admin / 전체 취업자, 남+여)"
-label var midskmshare "중숙련 직업 비중(남성)"
-label var midskfshare "중숙련 직업 비중(여성)"
+label var midskshare  "Middle-skill occupation share (Technicians/Trades+Community Service+Clerical/Admin / total employed, both sexes)"
+label var midskmshare "Middle-skill occupation share (male)"
+label var midskfshare "Middle-skill occupation share (female)"
 
-label var lowskshare  "저숙련 직업 비중(Sales+Machinery Operators+Labourers / 전체 취업자, 남+여)"
-label var lowskmshare "저숙련 직업 비중(남성)"
-label var lowskfshare "저숙련 직업 비중(여성)"
+label var lowskshare  "Low-skill occupation share (Sales+Machinery Operators+Labourers / total employed, both sexes)"
+label var lowskmshare "Low-skill occupation share (male)"
+label var lowskfshare "Low-skill occupation share (female)"
 
 * check: share가 1 넘는지 확인
 local sharevars highskshare highskmshare highskfshare midskshare midskmshare midskfshare lowskshare lowskmshare lowskfshare

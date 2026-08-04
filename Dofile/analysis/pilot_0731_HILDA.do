@@ -27,12 +27,12 @@ use "$final/ABS_HILDA_final.dta", clear
 sort id year
 xtset id year
 
-global regiondemo2 fifteenshare_lag bachshare_ageall_lag fifteen_trend bach_trend
-global indidemo edu hhiage i.hgsex
+global regiondemo2 fifteenshare_lag bachshare_ageall_lag 
+global indidemo i.edu hhiage i.hgsex
 
 // Log
-capture log close
-log using "$output/Log/pilot_0731_HILDA.log", replace 
+//capture log close
+//log using "$output/Log/pilot_0731_HILDA.log", replace 
 
 **********************************************************************
 * sample indicator (merge_ABS_HILDA.do에서 만든 no_missing_*/obs_pp_* 기반)
@@ -40,42 +40,100 @@ log using "$output/Log/pilot_0731_HILDA.log", replace
 gen sample_emp      = 1 if no_missing_emp==1      & obs_pp_emp>=3
 gen sample_marriage = 1 if no_missing_marriage==1 & obs_pp_marriage>=3
 **********************************************************************
-* table 1 - employment (flow + level)
+* table 1 - weekly hours, ln(wgae)
 **********************************************************************
 est clear
 
-xi: xtivreg2 employed         i.year $indidemo $regiondemo2 (Xit = Zit) if sample_emp==1, i(id) fe cluster(clusterid3) robust first savefprefix(fs_)
-est store m1
+xi: xtivreg2 jbhruc i.year (Xit = Zit) $regondemo2 $indidemo if sample_emp==1 & native !=. , i(id) fe cluster(clusterid3) robust first 
+est store m1 
 
-xi: xtivreg2 newly_employed   i.year $indidemo $regiondemo2 (Xit = Zit) if sample_emp==1, i(id) fe cluster(clusterid3) robust first savefprefix(fs_)
-est store m2
+xi:xtivreg2 lgwage i.year (Xit = Zit) $regondemo2 $indidemo if sample_emp==1 & native !=. , i(id) fe cluster(clusterid3) robust first 
+est store m2 
 
-xi: xtivreg2 job_loss         i.year $indidemo $regiondemo2 (Xit = Zit) if sample_emp==1, i(id) fe cluster(clusterid3) robust first savefprefix(fs_)
-est store m3
+xi: xtivreg2 jbhruc i.year (Xit = Zit) $regondemo2 $indidemo if sample_emp==1 & native==1 , i(id) fe cluster(clusterid3) robust first 
+est store m3 
 
-xi: xtivreg2 newly_high_skill i.year $indidemo $regiondemo2 (Xit = Zit) if sample_emp==1, i(id) fe cluster(clusterid3) robust first savefprefix(fs_)
-est store m4
+xi: xtivreg2 jbhruc i.year (Xit = Zit) $regondemo2 $indidemo if sample_emp==1 & native==0 , i(id) fe cluster(clusterid3) robust first 
+est store m4 
 
-xi: xtivreg2 skill_upgrade    i.year $indidemo $regiondemo2 (Xit = Zit) if sample_emp==1, i(id) fe cluster(clusterid3) robust first savefprefix(fs_)
-est store m5
+xi:xtivreg2 lgwage i.year (Xit = Zit) $regondemo2 $indidemo if sample_emp==1 & native ==1 , i(id) fe cluster(clusterid3) robust first 
+est store m5 
 
-xi: xtivreg2 skill_downgrade  i.year $indidemo $regiondemo2 (Xit = Zit) if sample_emp==1, i(id) fe cluster(clusterid3) robust first savefprefix(fs_)
-est store m6
+xi:xtivreg2 lgwage i.year (Xit = Zit) $regondemo2 $indidemo if sample_emp==1 & native == 0 , i(id) fe cluster(clusterid3) robust first 
+est store m6 
 
-esttab m1 m2 m3 m4 m5 m6, nogap stats(N cdf widstat arf arfp) r2(%8.3f) b(%8.3f) se(%8.3f) label star(* 0.10 ** 0.05 *** 0.01)
+esttab m*, nogap stats(N cdf widstat arf arfp) r2(%8.3f) b(%8.3f) se(%8.3f) label star(* 0.10 ** 0.05 *** 0.01)
 
+
+est clear
+
+xi: xtivreg2 jbhruc i.year (Xit = Zit) $regondemo2 $indidemo if sample_emp==1 & native==1 & edu == 1, i(id) fe cluster(clusterid3) robust first 
+est store m1 // native, high edu 
+
+xi: xtivreg2 jbhruc i.year (Xit = Zit) $regondemo2 $indidemo if sample_emp==1 & native==0 & edu == 1, i(id) fe cluster(clusterid3) robust first 
+est store m2 // immigrant, high edu 
+
+xi: xtivreg2 jbhruc i.year (Xit = Zit) $regondemo2 $indidemo if sample_emp==1 & native==1 & edu == 0, i(id) fe cluster(clusterid3) robust first 
+est store m3 // native, low edu 
+
+xi: xtivreg2 jbhruc i.year (Xit = Zit) $regondemo2 $indidemo if sample_emp==1 & native==0 & edu == 0, i(id) fe cluster(clusterid3) robust first 
+est store m4 // immigrant, low edu 
+
+
+xi:xtivreg2 lgwage i.year (Xit = Zit) $regondemo2 $indidemo if sample_emp==1 & native ==1 & edu ==1 , i(id) fe cluster(clusterid3) robust first 
+est store m5  // native, high edu 
+
+xi:xtivreg2 lgwage i.year (Xit = Zit) $regondemo2 $indidemo if sample_emp==1 & native == 0 & edu==1, i(id) fe cluster(clusterid3) robust first 
+est store m6 // immigrant, high edu 
+
+xi:xtivreg2 lgwage i.year (Xit = Zit) $regondemo2 $indidemo if sample_emp==1 & native ==1 & edu ==0 , i(id) fe cluster(clusterid3) robust first 
+est store m7  // native, low edu 
+
+xi:xtivreg2 lgwage i.year (Xit = Zit) $regondemo2 $indidemo if sample_emp==1 & native == 0 & edu==0, i(id) fe cluster(clusterid3) robust first 
+est store m8 // immigrant, low edu 
+
+esttab m*, nogap stats(N cdf widstat arf arfp) r2(%8.3f) b(%8.3f) se(%8.3f) label star(* 0.10 ** 0.05 *** 0.01)
 **********************************************************************
-* table 2 - marriage (flow + level)
+* table 2 - marriage 
 **********************************************************************
 est clear
 
-xi: xtivreg2 married       i.year $indidemo $regiondemo2 (Xit = Zit) if sample_marriage==1, i(id) fe cluster(clusterid3) robust first savefprefix(fs_)
-est store m1
+xi: xtivreg2 married i.year (Xit = Zit) $regondemo2 $indidemo if sample_emp==1 & native !=.   , i(id) fe cluster(clusterid3) robust first 
+est store m1 
 
-xi: xtivreg2 newly_married i.year $indidemo $regiondemo2 (Xit = Zit) if sample_marriage==1, i(id) fe cluster(clusterid3) robust first savefprefix(fs_)
-est store m2
+xi: xtivreg2 married i.year (Xit = Zit) $regondemo2 $indidemo if sample_emp==1 & native !=. & edu ==1, i(id) fe cluster(clusterid3) robust first 
+est store m2 
 
-esttab m1 m2, nogap stats(N cdf widstat arf arfp) r2(%8.3f) b(%8.3f) se(%8.3f) label star(* 0.10 ** 0.05 *** 0.01)
+xi: xtivreg2 married i.year (Xit = Zit) $regondemo2 $indidemo if sample_emp==1 & native !=. & edu ==0 , i(id) fe cluster(clusterid3) robust first 
+est store m3 
+
+esttab m*, nogap stats(N cdf widstat arf arfp) r2(%8.3f) b(%8.3f) se(%8.3f) label star(* 0.10 ** 0.05 *** 0.01)
+
+
+est clear 
+
+xi: xtivreg2 married i.year (Xit = Zit) $regondemo2 $indidemo if sample_emp==1 & native !=. & edu ==1 & native==1, i(id) fe cluster(clusterid3) robust first 
+est store m1 
+
+xi: xtivreg2 married i.year (Xit = Zit) $regondemo2 $indidemo if sample_emp==1 & native !=. & edu ==1 & native==0, i(id) fe cluster(clusterid3) robust first 
+est store m2 
+
+xi: xtivreg2 married i.year (Xit = Zit) $regondemo2 $indidemo if sample_emp==1 & native !=. & edu ==0 & native==1 , i(id) fe cluster(clusterid3) robust first 
+est store m3 
+
+xi: xtivreg2 married i.year (Xit = Zit) $regondemo2 $indidemo if sample_emp==1 & native !=. & edu ==0 & native==0 , i(id) fe cluster(clusterid3) robust first 
+est store m4 
+esttab m*, nogap stats(N cdf widstat arf arfp) r2(%8.3f) b(%8.3f) se(%8.3f) label star(* 0.10 ** 0.05 *** 0.01)
+
+
+/*
+xi:xtivreg2 lgwage i.year (Xit = Zit) $regondemo2 $indidemo if sample_emp==1 & native ==1 , i(id) fe cluster(clusterid3) robust first 
+est store m5 
+
+xi:xtivreg2 lgwage i.year (Xit = Zit) $regondemo2 $indidemo if sample_emp==1 & native == 0 , i(id) fe cluster(clusterid3) robust first 
+est store m6 
+*/
+
 
 **********************************************************************
 * heterogeneity analysis - native vs immigrant (native==1/0 기준)
@@ -137,4 +195,4 @@ est store i8
 
 esttab i1 i2 i3 i4 i5 i6 i7 i8, nogap stats(N cdf widstat arf arfp) r2(%8.3f) b(%8.3f) se(%8.3f) label star(* 0.10 ** 0.05 *** 0.01) title(Immigrant, native==0)
 
-log close
+// log close

@@ -72,24 +72,24 @@ keep LGAFINAL21 year ///
     nevermarriedmaleshare_1539 nevermarriedfemaleshare_1539 nevermarriedshare_1539 marriagemktsexratio_1539 totpop_f_2034 totpop_f_1539 totpop_m_2034 totpop_m_1539
 
 * 주요 변수 라벨링
-label var marriedshare_2034          "기혼 비율(20-34세, 남+여 전체)"
-label var marriedmaleshare_2034      "기혼 비율(20-34세, 남성)"
-label var marriedfemaleshare_2034    "기혼 비율(20-34세, 여성)"
-label var nevermarriedshare_2034     "미혼 비율(20-34세, 남+여 전체)"
-label var nevermarriedmaleshare_2034 "미혼 비율(20-34세, 남성)"
-label var nevermarriedfemaleshare_2034 "미혼 비율(20-34세, 여성)"
-label var marriagemktsexratio_2034   "결혼시장 성비(20-34세 미혼남/미혼여)"
-label var share_2034                 "전체 인구 중 20-34세 비중"
-label var maleshare_2034             "20-34세 인구 중 남성 비율"
-label var femaleshare_2034           "20-34세 인구 중 여성 비율"
+label var marriedshare_2034          "Married share (age 20-34, both sexes)"
+label var marriedmaleshare_2034      "Married share (age 20-34, male)"
+label var marriedfemaleshare_2034    "Married share (age 20-34, female)"
+label var nevermarriedshare_2034     "Never married share (age 20-34, both sexes)"
+label var nevermarriedmaleshare_2034 "Never married share (age 20-34, male)"
+label var nevermarriedfemaleshare_2034 "Never married share (age 20-34, female)"
+label var marriagemktsexratio_2034   "Marriage market sex ratio (age 20-34, unmarried male / unmarried female)"
+label var share_2034                 "Share of total population aged 20-34"
+label var maleshare_2034             "Male share of population aged 20-34"
+label var femaleshare_2034           "Female share of population aged 20-34"
 
-label var marriedshare_1539          "기혼 비율(15-39세, 남+여 전체)"
-label var marriedmaleshare_1539      "기혼 비율(15-39세, 남성)"
-label var marriedfemaleshare_1539    "기혼 비율(15-39세, 여성)"
-label var nevermarriedshare_1539     "미혼 비율(15-39세, 남+여 전체)"
-label var nevermarriedmaleshare_1539 "미혼 비율(15-39세, 남성)"
-label var nevermarriedfemaleshare_1539 "미혼 비율(15-39세, 여성)"
-label var marriagemktsexratio_1539   "결혼시장 성비(15-39세 미혼남/미혼여)"
+label var marriedshare_1539          "Married share (age 15-39, both sexes)"
+label var marriedmaleshare_1539      "Married share (age 15-39, male)"
+label var marriedfemaleshare_1539    "Married share (age 15-39, female)"
+label var nevermarriedshare_1539     "Never married share (age 15-39, both sexes)"
+label var nevermarriedmaleshare_1539 "Never married share (age 15-39, male)"
+label var nevermarriedfemaleshare_1539 "Never married share (age 15-39, female)"
+label var marriagemktsexratio_1539   "Marriage market sex ratio (age 15-39, unmarried male / unmarried female)"
 
 **********************************************************************
 * 체크: share 변수들이 1을 넘지 않는지 확인 (marriagemktsexratio는 제외)

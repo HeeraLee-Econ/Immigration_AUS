@@ -48,12 +48,12 @@ gen bachshare_2034  = (bach_m_2034 + bach_f_2034) / (grandtotal_m_2034 + grandto
 gen bachmshare_2034 = bach_m_2034 / grandtotal_m_2034
 gen bachfshare_2034 = bach_f_2034 / grandtotal_f_2034
 
-label var bachshare_ageall  "학사 이상 학력 비율(전연령, 남+여 전체)"
-label var bachmshare_ageall "학사 이상 학력 비율(전연령, 남성)"
-label var bachfshare_ageall "학사 이상 학력 비율(전연령, 여성)"
-label var bachshare_2034    "학사 이상 학력 비율(20-34세, 남+여 전체)"
-label var bachmshare_2034   "학사 이상 학력 비율(20-34세, 남성)"
-label var bachfshare_2034   "학사 이상 학력 비율(20-34세, 여성)"
+label var bachshare_ageall  "Bachelor's degree or higher share (all ages, both sexes)"
+label var bachmshare_ageall "Bachelor's degree or higher share (all ages, male)"
+label var bachfshare_ageall "Bachelor's degree or higher share (all ages, female)"
+label var bachshare_2034    "Bachelor's degree or higher share (age 20-34, both sexes)"
+label var bachmshare_2034   "Bachelor's degree or higher share (age 20-34, male)"
+label var bachfshare_2034   "Bachelor's degree or higher share (age 20-34, female)"
 
 keep LGAFINAL21 year bachshare_ageall bachmshare_ageall bachfshare_ageall bachshare_2034 bachmshare_2034 bachfshare_2034 
 

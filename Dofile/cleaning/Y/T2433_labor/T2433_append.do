@@ -78,28 +78,28 @@ gen unempshare_1539  = (unemployed_m_1539 + unemployed_f_1539) / (laborforce_m_1
 gen unempmshare_1539 = unemployed_m_1539 / laborforce_m_1539
 gen unempfshare_1539 = unemployed_f_1539 / laborforce_f_1539
 
-label var empshare_ageall    "고용률(E/P ratio, 전연령, 남+여 전체, 분모=생산가능인구)"
-label var empmshare_ageall   "고용률(E/P ratio, 전연령, 남성)"
-label var empfshare_ageall   "고용률(E/P ratio, 전연령, 여성)"
-label var unempshare_ageall  "실업률(전연령, 남+여 전체, 분모=경제활동인구)"
-label var unempmshare_ageall "실업률(전연령, 남성)"
-label var unempfshare_ageall "실업률(전연령, 여성)"
+label var empshare_ageall    "Employment rate (E/P ratio, all ages, both sexes, denominator=working-age population)"
+label var empmshare_ageall   "Employment rate (E/P ratio, all ages, male)"
+label var empfshare_ageall   "Employment rate (E/P ratio, all ages, female)"
+label var unempshare_ageall  "Unemployment rate (all ages, both sexes, denominator=labour force)"
+label var unempmshare_ageall "Unemployment rate (all ages, male)"
+label var unempfshare_ageall "Unemployment rate (all ages, female)"
 
-label var unempshare_2034  "실업률(20-34세, 남+여 전체)"
-label var unempmshare_2034 "실업률(20-34세, 남성)"
-label var unempfshare_2034 "실업률(20-34세, 여성)"
+label var unempshare_2034  "Unemployment rate (age 20-34, both sexes)"
+label var unempmshare_2034 "Unemployment rate (age 20-34, male)"
+label var unempfshare_2034 "Unemployment rate (age 20-34, female)"
 
-label var unempshare_1539  "실업률(15-39세, 남+여 전체)"
-label var unempmshare_1539 "실업률(15-39세, 남성)"
-label var unempfshare_1539 "실업률(15-39세, 여성)"
+label var unempshare_1539  "Unemployment rate (age 15-39, both sexes)"
+label var unempmshare_1539 "Unemployment rate (age 15-39, male)"
+label var unempfshare_1539 "Unemployment rate (age 15-39, female)"
 
 * 나중에 T26/T35(occupation) 기반 skill/직업 구성비(share) 만들 때 분모로 쓸 총 취업자수
 * (T26/T35는 "employed 15세+" 기준 데이터라 working-age population이 아니라 total employed로
 *  나눠야 함 - Peri & Sparber 2009, Foged & Peri 2016 등 occupational upgrading 문헌 표준)
 rename employed_m_ageall totemp_m
 rename employed_f_ageall totemp_f
-label var totemp_m "총 취업자수(전연령, 남성) - T26/T35 occupation share 분모용"
-label var totemp_f "총 취업자수(전연령, 여성) - T26/T35 occupation share 분모용"
+label var totemp_m "Total employed (all ages, male) - denominator for T26/T35 occupation share"
+label var totemp_f "Total employed (all ages, female) - denominator for T26/T35 occupation share"
 
 **********************************************************************
 * 15+ 인구, labor force 인구 (나중에 skill별 displacement 분석의 분모로 쓸 raw count)
@@ -112,12 +112,12 @@ rename laborforce_m_ageall lf_m
 rename laborforce_f_ageall lf_f
 gen lf_total = lf_m + lf_f
 
-label var pop15_total "15세 이상 인구(전연령, 남+여 전체)"
-label var pop15_m     "15세 이상 인구(전연령, 남성)"
-label var pop15_f     "15세 이상 인구(전연령, 여성)"
-label var lf_total    "경제활동인구(labour force, 전연령, 남+여 전체)"
-label var lf_m        "경제활동인구(labour force, 전연령, 남성)"
-label var lf_f        "경제활동인구(labour force, 전연령, 여성)"
+label var pop15_total "Population aged 15+ (all ages, both sexes)"
+label var pop15_m     "Population aged 15+ (all ages, male)"
+label var pop15_f     "Population aged 15+ (all ages, female)"
+label var lf_total    "Labour force (all ages, both sexes)"
+label var lf_m        "Labour force (all ages, male)"
+label var lf_f        "Labour force (all ages, female)"
 
 keep LGAFINAL21 year totemp_m totemp_f pop15_total pop15_m pop15_f lf_total lf_m lf_f ///
     empshare_ageall empmshare_ageall empfshare_ageall ///

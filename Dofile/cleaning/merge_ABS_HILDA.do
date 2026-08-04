@@ -38,8 +38,11 @@ drop _merge
 // IDENTIFIES singleton AND CONSTRUCT flag variable 
 
 * 완결성 indicator만 만들어두고, 실제 drop은 안 함
-gen no_missing_emp      = (employed!=. & edu!=. & hhiage!=. & hgsex!=.)
-gen no_missing_marriage = (mrcurr!=.   & edu!=. & hhiage!=. & hgsex!=.)
+gen no_missing_emp = (ancob!=. & edu!=. & hhiage!=. & hgsex!=. & jbhruc!=. & lgwage !=.)
+// ancob, native 모두 관측치 동일 
+
+gen no_missing_marriage = (ancob!=. & edu!=. & hhiage!=. & hgsex!=. & married !=.)
+// mrcurr, married 모두 관측치 동일 
 
 bys id: egen obs_pp_emp      = total(no_missing_emp)
 bys id: egen obs_pp_marriage = total(no_missing_marriage)
