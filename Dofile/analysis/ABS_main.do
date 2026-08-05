@@ -154,9 +154,9 @@ esttab fe1 fe2 fe3 fe4 using "Table4.csv", append ///
 * Table 5: The Effects of Immigration on Marriage Share (FE-IV만, panel 없음)
 **********************************************************************
 eststo clear
-eststo t5_1: xi: xtivreg2 marriedshare_2034       (Xit = Zit) i.year $demo marriagemktsexratio_2034 if sample==1, cluster(LGAFINAL21) robust first fe
-eststo t5_2: xi: xtivreg2 marriedmaleshare_2034   (Xit = Zit) i.year $demo marriagemktsexratio_2034 if sample==1, cluster(LGAFINAL21) robust first fe
-eststo t5_3: xi: xtivreg2 marriedfemaleshare_2034 (Xit = Zit) i.year $demo marriagemktsexratio_2034 if sample==1, cluster(LGAFINAL21) robust first fe
+eststo t5_1: xi: xtivreg2 marriedshare_2034       (Xit = Zit) i.year $demo if sample==1, cluster(LGAFINAL21) robust first fe
+eststo t5_2: xi: xtivreg2 marriedmaleshare_2034   (Xit = Zit) i.year $demo if sample==1, cluster(LGAFINAL21) robust first fe
+eststo t5_3: xi: xtivreg2 marriedfemaleshare_2034 (Xit = Zit) i.year $demo if sample==1, cluster(LGAFINAL21) robust first fe
 
 esttab t5_1 t5_2 t5_3 using "Table5.csv", replace ///
     keep(Xit) label b(%9.3f) se(%9.3f) star(* 0.10 ** 0.05 *** 0.01) nogap ///
@@ -210,17 +210,12 @@ global hetero_loweng  "high_eng01 == 0 & !missing(high_eng01)"
 tab high_eng01 year
 **********************************************************************
 eststo clear
-eststo t6_1: xi: xtivreg2 marriedshare_2034       (Xit = Zit) i.year $demo marriagemktsexratio_2034 if sample==1 & $hetero_higheng, cluster(LGAFINAL21) robust first fe
-
-eststo t6_2: xi: xtivreg2 marriedmaleshare_2034   (Xit = Zit) i.year $demo marriagemktsexratio_2034 if sample==1 & $hetero_higheng, cluster(LGAFINAL21) robust first fe
-
-eststo t6_3: xi: xtivreg2 marriedfemaleshare_2034 (Xit = Zit) i.year $demo marriagemktsexratio_2034 if sample==1 & $hetero_higheng, cluster(LGAFINAL21) robust first fe
-
-eststo t6_4: xi: xtivreg2 marriedshare_2034       (Xit = Zit) i.year $demo marriagemktsexratio_2034 if sample==1 & $hetero_loweng, cluster(LGAFINAL21) robust first fe
-
-eststo t6_5: xi: xtivreg2 marriedmaleshare_2034   (Xit = Zit) i.year $demo marriagemktsexratio_2034 if sample==1 & $hetero_loweng, cluster(LGAFINAL21) robust first fe
-
-eststo t6_6: xi: xtivreg2 marriedfemaleshare_2034 (Xit = Zit) i.year $demo marriagemktsexratio_2034 if sample==1 & $hetero_loweng, cluster(LGAFINAL21) robust first fe
+eststo t6_1: xi: xtivreg2 marriedshare_2034       (Xit = Zit) i.year $demo if sample==1 & $hetero_higheng, cluster(LGAFINAL21) robust first fe
+eststo t6_2: xi: xtivreg2 marriedmaleshare_2034   (Xit = Zit) i.year $demo if sample==1 & $hetero_higheng, cluster(LGAFINAL21) robust first fe
+eststo t6_3: xi: xtivreg2 marriedfemaleshare_2034 (Xit = Zit) i.year $demo if sample==1 & $hetero_higheng, cluster(LGAFINAL21) robust first fe
+eststo t6_4: xi: xtivreg2 marriedshare_2034       (Xit = Zit) i.year $demo if sample==1 & $hetero_loweng, cluster(LGAFINAL21) robust first fe
+eststo t6_5: xi: xtivreg2 marriedmaleshare_2034   (Xit = Zit) i.year $demo if sample==1 & $hetero_loweng, cluster(LGAFINAL21) robust first fe
+eststo t6_6: xi: xtivreg2 marriedfemaleshare_2034 (Xit = Zit) i.year $demo if sample==1 & $hetero_loweng, cluster(LGAFINAL21) robust first fe
 
 esttab t6_1 t6_2 t6_3 t6_4 t6_5 t6_6 using "Table6.csv", replace ///
     keep(Xit) label b(%9.3f) se(%9.3f) star(* 0.10 ** 0.05 *** 0.01) nogap ///

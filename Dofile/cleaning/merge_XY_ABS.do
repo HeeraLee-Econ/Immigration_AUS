@@ -40,16 +40,22 @@ tsset LGAFINAL21 year, delta(5)
 // lagged control variable
 gen fifteenshare_lag    = L.fifteenshare
 gen bachshare_ageall_lag = L.bachshare_ageall
+gen marriagemktsexratio_2034_lag = L.marriagemktsexratio_2034
 
 // time trend - 2001년도 기준. 
 gen trend = (year - 2001) / 5 
 egen fifteenshare_base = max(cond(year==2001, fifteenshare_lag, .)), by(LGAFINAL21)
 egen bach_base          = max(cond(year==2001, bachshare_ageall_lag, .)), by(LGAFINAL21)
+egen sexratio_base =  max(cond(year==2001, marriagemktsexratio_2034_lag, .)), by(LGAFINAL21)
 
 gen fifteen_trend = fifteenshare_base * trend  
 replace fifteen_trend =. if year <=1996 
 
 gen bach_trend = bach_base * trend 
 replace bach_trend =.  if year<=1996 
+
+gen sexratio_trend = sexratio_base * trend 
+replace sexratio_trend =.  if year<=1996 
+
 
 save "$final/ABS_XY_final.dta", replace 

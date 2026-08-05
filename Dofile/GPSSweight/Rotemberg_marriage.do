@@ -51,19 +51,17 @@ foreach k of local KLIST {
 
 **********************************************************************
 * 3. 표본/컨트롤 설정 (ABS_robust.do 결혼 스펙과 동일: baseline lag control +
-*    marriagemktsexratio_2034, 2001-2021 표본)
 **********************************************************************
 sort LGAFINAL21 year
 xtset LGAFINAL21 year
 tsset LGAFINAL21 year, delta(5)
 
-global demo fifteenshare_lag bachshare_ageall_lag marriagemktsexratio_2034
+global demo fifteenshare_lag bachshare_ageall_lag 
 
-gen sample = 1 if year>=2001 & year<=2021
+gen sample = 1 if year>=2001 & year<=2021 & !missing(marriedshare_2034)
 keep if sample==1
 
 tabulate year, generate(year_)
-
 **********************************************************************
 * STEP1: y, x residualize
 *   LGA FE(i.LGAFINAL21) + year FE(year_1-year_5) + baseline control($demo)을
@@ -77,7 +75,6 @@ gen p_t_res = marriedshare_2034 - yhat
 xi: reg Xit $demo year_1-year_5 i.LGAFINAL21, cluster(LGAFINAL21)
 predict xhat, xb
 gen immigration_res = Xit - xhat
-
 **********************************************************************
 * STEP2: 국가 k별 just-identified instrument
 *   bb_k = share91_k * g_kt_k / pop_i91   (Xit/Zit와 동일한 분모로 맞춤)

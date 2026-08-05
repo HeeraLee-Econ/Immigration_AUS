@@ -92,11 +92,11 @@ esttab r6_9 r6_10 r6_11 r6_12 using "Robust_leave_gender.csv", append ///
 
 * 6-3. 결혼 (20-34세, overall/male/female)
 eststo clear
-eststo r6_13: xi: xtivreg2 marriedshare_2034       (Xit = Zit_exclIndia) i.year $demo marriagemktsexratio_2034 if sample==1, fe cluster(LGAFINAL21) robust first
+eststo r6_13: xi: xtivreg2 marriedshare_2034       (Xit = Zit_exclIndia) i.year $demo if sample==1, fe cluster(LGAFINAL21) robust first
 
-eststo r6_14: xi: xtivreg2 marriedmaleshare_2034   (Xit = Zit_exclIndia) i.year $demo marriagemktsexratio_2034 if sample==1, fe cluster(LGAFINAL21) robust first
+eststo r6_14: xi: xtivreg2 marriedmaleshare_2034   (Xit = Zit_exclIndia) i.year $demo  if sample==1, fe cluster(LGAFINAL21) robust first
 
-eststo r6_15: xi: xtivreg2 marriedfemaleshare_2034 (Xit = Zit_exclIndia) i.year $demo marriagemktsexratio_2034 if sample==1, fe cluster(LGAFINAL21) robust first
+eststo r6_15: xi: xtivreg2 marriedfemaleshare_2034 (Xit = Zit_exclIndia) i.year $demo  if sample==1, fe cluster(LGAFINAL21) robust first
 
 esttab r6_13 r6_14 r6_15 using "Robust_leave_marriage.csv", replace ///
     keep(Xit) label b(%9.3f) se(%9.3f) star(* 0.10 ** 0.05 *** 0.01) nogap ///
@@ -138,7 +138,7 @@ eststo r7_5: xi: xtivreg2 unempmshare_ageall (Xit = Zit) i.year $demo2 if sample
 
 eststo r7_6: xi: xtivreg2 highskmshare       (Xit = Zit) i.year $demo2 if sample==1, fe cluster(LGAFINAL21) robust first
 
-eststo r7_7: xi: xtivreg2 midskmshare        (Xit = Zit) i.year $demo2 if sample==1, fe cluster(LGAFINAL21) robust first
+eststo r7_7: xi: xtivreg2 midskmshare       (Xit = Zit) i.year $demo2 if sample==1, fe cluster(LGAFINAL21) robust first
 
 eststo r7_8: xi: xtivreg2 lowskmshare        (Xit = Zit) i.year $demo2 if sample==1, fe cluster(LGAFINAL21) robust first
 
@@ -174,11 +174,11 @@ esttab r7_9 r7_10 r7_11 r7_12 using "Robust_add_gender.csv", append ///
 
 * 7-3. 결혼 (20-34세, overall/male/female)
 eststo clear
-eststo r7_13: xi: xtivreg2 marriedshare_2034       (Xit = Zit) i.year $demo2 marriagemktsexratio_2034 if sample==1, fe cluster(LGAFINAL21) robust first
+eststo r7_13: xi: xtivreg2 marriedshare_2034       (Xit = Zit) i.year $demo2  if sample==1, fe cluster(LGAFINAL21) robust first
 
-eststo r7_14: xi: xtivreg2 marriedmaleshare_2034   (Xit = Zit) i.year $demo2 marriagemktsexratio_2034 if sample==1, fe cluster(LGAFINAL21) robust first
+eststo r7_14: xi: xtivreg2 marriedmaleshare_2034   (Xit = Zit) i.year $demo2  if sample==1, fe cluster(LGAFINAL21) robust first
 
-eststo r7_15: xi: xtivreg2 marriedfemaleshare_2034 (Xit = Zit) i.year $demo2 marriagemktsexratio_2034 if sample==1, fe cluster(LGAFINAL21) robust first
+eststo r7_15: xi: xtivreg2 marriedfemaleshare_2034 (Xit = Zit) i.year $demo2  if sample==1, fe cluster(LGAFINAL21) robust first
 
 esttab r7_13 r7_14 r7_15 using "Robust_add_marriage.csv", replace ///
          keep(Xit bachshare_ageall_lag fifteenshare_lag bach_trend fifteen_trend)  label b(%9.3f) se(%9.3f) star(* 0.10 ** 0.05 *** 0.01) nogap ///

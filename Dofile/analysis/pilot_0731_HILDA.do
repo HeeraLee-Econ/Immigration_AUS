@@ -31,8 +31,8 @@ global regiondemo2 fifteenshare_lag bachshare_ageall_lag
 global indidemo i.edu hhiage i.hgsex
 
 // Log
-//capture log close
-//log using "$output/Log/pilot_0731_HILDA.log", replace 
+capture log close
+log using "$output/Log/pilot_0731_HILDA.log", replace 
 
 **********************************************************************
 * sample indicator (merge_ABS_HILDA.do에서 만든 no_missing_*/obs_pp_* 기반)
@@ -195,4 +195,4 @@ est store i8
 
 esttab i1 i2 i3 i4 i5 i6 i7 i8, nogap stats(N cdf widstat arf arfp) r2(%8.3f) b(%8.3f) se(%8.3f) label star(* 0.10 ** 0.05 *** 0.01) title(Immigrant, native==0)
 
-// log close
+log close
